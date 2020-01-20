@@ -44,6 +44,7 @@
     "rxjs-compat": "^6.4.0",
     "strict-event-emitter-types": "^2.0.0",
     "typescript": "^3.0.1",
+    "uuid": "^3.4.0",
     "winston": "^3.2.1",
     "xml2js": "^0.4.19"
   },

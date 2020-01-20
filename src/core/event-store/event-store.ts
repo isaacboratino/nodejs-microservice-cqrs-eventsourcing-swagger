@@ -38,6 +38,7 @@ export class EventStore implements IEventPublisher, IMessageSource {
     const userId = message.userId || message.userDto.userId;
     const streamName = `${this.category}-${userId}`;
     const type = event.constructor.name;
+
     try {
       await this.eventStore.client.writeEvent(streamName, type, event);
     } catch (err) {
@@ -53,14 +54,35 @@ export class EventStore implements IEventPublisher, IMessageSource {
     const streamName = `$ce-${this.category}`;
 
     const onEvent = async (event) => {
-      const eventUrl = eventStoreHostUrl +
+
+      try {
+
+        const streamName = event.metadata.$o;
+
+        const lastEventResponse = await this.eventStore.client.readEventsBackward(streamName);
+        const lastEvent = lastEventResponse.events[0];
+
+        const eventType = lastEvent.eventType;
+        const data = lastEvent.data;
+        event = this.eventHandlers[eventType](...Object.values(data));
+        subject.next(event);
+
+
+      } catch (err) {
+        console.trace(err);
+      }
+
+      /*const eventUrl = eventStoreHostUrl +
         `${event.metadata.$o}/${event.data.split('@')[0]}`;
+
       http.get(eventUrl, (res) => {
+
         res.setEncoding('utf8');
         let rawData = '';
         res.on('data', (chunk) => { rawData += chunk; });
         res.on('end', () => {
           xml2js.parseString(rawData, (err, result) => {
+
             if (err) {
               console.trace(err);
               return;
@@ -72,7 +94,7 @@ export class EventStore implements IEventPublisher, IMessageSource {
             subject.next(event);
           });
         });
-      });
+      });*/
     };
 
     const onDropped = (subscription, reason, error) => {

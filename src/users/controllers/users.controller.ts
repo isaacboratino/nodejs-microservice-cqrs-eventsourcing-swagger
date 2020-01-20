@@ -4,6 +4,8 @@ import { UserIdRequestParamsDto } from '../dtos/users.dto';
 import { UserDto } from '../dtos/users.dto';
 import { UsersService } from '../services/users.service';
 
+const uuidv4 = require('uuid/v4');
+
 @Controller('users')
 @ApiUseTags('Users')
 export class UsersController {
@@ -15,7 +17,8 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Create User.' })
   @Post()
   async createUser(@Body() userDto: UserDto): Promise<UserDto> {
-    const userId = Math.floor(Math.random() * (999 - 100 + 1) + 100);
+    //const userId = uuidv4();
+    const userId = 1234;
     return this.usersService.createUser({...{userId}, ...userDto});
   }
 
