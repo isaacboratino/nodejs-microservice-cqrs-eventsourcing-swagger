@@ -1,7 +1,8 @@
-import { CommandBus, EventBus, CQRSModule } from '@nestjs/cqrs';
+import { CommandBus, QueryBus, EventBus, CQRSModule } from '@nestjs/cqrs';
 import { OnModuleInit, Module } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { CommandHandlers } from './commands/handlers';
+import { QueryHandlers } from './queries/handlers';
 import { EventHandlers } from './events/handlers';
 import { UsersSagas } from './sagas/users.sagas';
 import { UsersController } from './controllers/users.controller';
@@ -9,6 +10,7 @@ import { UsersService } from './services/users.service';
 import { UserRepository } from './repository/user.repository';
 import { EventStoreModule } from '../core/event-store/event-store.module';
 import { EventStore } from '../core/event-store/event-store';
+import { UserGetedEvent } from './events/impl/user-geted.event';
 import { UserCreatedEvent } from './events/impl/user-created.event';
 import { UserDeletedEvent } from './events/impl/user-deleted.event';
 import { UserUpdatedEvent } from './events/impl/user-updated.event';
@@ -23,6 +25,7 @@ import { UserWelcomedEvent } from './events/impl/user-welcomed.event';
   providers: [
     UsersService,
     UsersSagas,
+    ...QueryHandlers,
     ...CommandHandlers,
     ...EventHandlers,
     UserRepository,
@@ -32,12 +35,14 @@ export class UsersModule implements OnModuleInit {
   constructor(
     private readonly moduleRef: ModuleRef,
     private readonly command$: CommandBus,
+    private readonly query$: QueryBus,
     private readonly event$: EventBus,
     private readonly usersSagas: UsersSagas,
     private readonly eventStore: EventStore,
   ) {}
 
   onModuleInit() {
+    this.query$.setModuleRef(this.moduleRef);
     this.command$.setModuleRef(this.moduleRef);
     this.event$.setModuleRef(this.moduleRef);
     /** ------------ */
@@ -46,11 +51,13 @@ export class UsersModule implements OnModuleInit {
     this.event$.publisher = this.eventStore;
     /** ------------ */
     this.event$.register(EventHandlers);
+    this.query$.register(QueryHandlers);
     this.command$.register(CommandHandlers);
     this.event$.combineSagas([this.usersSagas.userCreated]);
   }
 
   eventHandlers = {
+    UserGetedEvent: (data) => new UserGetedEvent(data),
     UserCreatedEvent: (data) => new UserCreatedEvent(data),
     UserDeletedEvent: (data) => new UserDeletedEvent(data),
     UserUpdatedEvent: (data) => new UserUpdatedEvent(data),

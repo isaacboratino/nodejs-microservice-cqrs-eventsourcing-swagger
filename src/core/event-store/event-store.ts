@@ -3,8 +3,6 @@ import { IEventPublisher } from '@nestjs/cqrs/dist/interfaces/events/event-publi
 import { IMessageSource } from '@nestjs/cqrs/dist/interfaces/events/message-source.interface';
 import { IEvent } from '@nestjs/cqrs/dist/interfaces/events/event.interface';
 import { Subject, fromEvent } from 'rxjs';
-import * as xml2js from 'xml2js';
-import * as http from 'http';
 import { config } from '../../../config';
 
 const eventStoreHostUrl = config.EVENT_STORE_SETTINGS.protocol +
@@ -71,30 +69,6 @@ export class EventStore implements IEventPublisher, IMessageSource {
       } catch (err) {
         console.trace(err);
       }
-
-      /*const eventUrl = eventStoreHostUrl +
-        `${event.metadata.$o}/${event.data.split('@')[0]}`;
-
-      http.get(eventUrl, (res) => {
-
-        res.setEncoding('utf8');
-        let rawData = '';
-        res.on('data', (chunk) => { rawData += chunk; });
-        res.on('end', () => {
-          xml2js.parseString(rawData, (err, result) => {
-
-            if (err) {
-              console.trace(err);
-              return;
-            }
-            const content = result['atom:entry']['atom:content'][0];
-            const eventType = content.eventType[0];
-            const data = content.data[0];
-            event = this.eventHandlers[eventType](...Object.values(data));
-            subject.next(event);
-          });
-        });
-      });*/
     };
 
     const onDropped = (subscription, reason, error) => {

@@ -49,12 +49,12 @@ export class UsersController {
     return this.usersService.findUsers();
   }
 
-  /* TODO: Find User */
+  /* TODO: Get User */
   /*--------------------------------------------*/
   @ApiOperation({ title: 'Get User' })
   @ApiResponse({ status: 200, description: 'Get User.' })
   @Get(':userId')
-  async findOneUser(@Param() userId: UserIdRequestParamsDto) {
-    return this.usersService.findUsers();
+  async getUser(@Param() userId: UserIdRequestParamsDto) {
+    return this.usersService.getUser(userId);
   }
 }
